@@ -109,28 +109,43 @@ export default class App {
     });
   }
 
-  async renderPage() {
-    const url = getActiveRoute();
-    const route = routes[url];
+async renderPage() {
+  const url = getActiveRoute();
+  const route = routes[url];
 
-    // Get page instance
-    const page = route();
+  // Redirect ke login jika belum login dan halaman bukan login/register
+  const isLogin = !!getAccessToken();
+  const authPages = ['/login', '/register'];
 
-    const transition = transitionHelper({
-      updateDOM: async () => {
-        this.#content.innerHTML = await page.render();
-        page.afterRender();
-      },
-    });
-
-    transition.ready.catch(console.error);
-    transition.updateCallbackDone.then(() => {
-      scrollTo({ top: 0, behavior: 'instant' });
-      this.#setupNavigationList();
- 
-      if (isServiceWorkerAvailable()) {
-        this.#setupPushNotification();
-      }
-    });
+  if (!isLogin && !authPages.includes(url)) {
+    location.hash = '/login';
+    return;
   }
+
+  // ✅ Tambahkan validasi jika route tidak ditemukan
+  if (!route || typeof route !== 'function') {
+    this.#content.innerHTML = '<p style="text-align:center; padding: 2rem;">Halaman tidak ditemukan.</p>';
+    return;
+  }
+
+  const page = route();
+
+  const transition = transitionHelper({
+    updateDOM: async () => {
+      this.#content.innerHTML = await page.render();
+      page.afterRender();
+    },
+  });
+
+  transition.ready.catch(console.error);
+  transition.updateCallbackDone.then(() => {
+    scrollTo({ top: 0, behavior: 'instant' });
+    this.#setupNavigationList();
+
+    if (isServiceWorkerAvailable()) {
+      this.#setupPushNotification();
+    }
+  });
+}
+
 }

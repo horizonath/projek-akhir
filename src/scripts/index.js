@@ -1,12 +1,11 @@
-// CSS imports
+// CSS & Library
 import '../styles/styles.css';
 import '../styles/responsives.css';
 import 'tiny-slider/dist/tiny-slider.css';
 import 'leaflet/dist/leaflet.css';
 
-// Components
+// Komponen
 import App from './pages/app';
-import Camera from './utils/camera';
 import { registerServiceWorker } from './utils';
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -16,12 +15,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     drawerNavigation: document.getElementById('navigation-drawer'),
     skipLinkButton: document.getElementById('skip-link'),
   });
+
   await app.renderPage();
-  
   await registerServiceWorker();
 
-  console.log('Berhasil mendaftarkan service worker.');
- 
+  if (process.env.NODE_ENV === 'production') {
+    await app.setupPushNotification?.(); // hanya jika method ini ada
+  }
+
+  console.log('Service Worker berhasil didaftarkan.');
+
   window.addEventListener('hashchange', async () => {
     await app.renderPage();
   });

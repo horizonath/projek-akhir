@@ -8,6 +8,9 @@ import {
 import HomePresenter from './home-presenter';
 import Map from '../../utils/map';
 import * as CityCareAPI from '../../data/api';
+import { getAccessToken } from '../../utils/auth';
+import { navigateToLogin } from '../../utils/navigator'; // pastikan kamu punya ini
+
 
 export default class HomePage {
   #presenter = null;
@@ -33,14 +36,21 @@ export default class HomePage {
     `;
   }
 
-  async afterRender() {
-    this.#presenter = new HomePresenter({
-      view: this,
-      model: CityCareAPI,
-    });
+async afterRender() {
+  const token = getAccessToken();
 
-    await this.#presenter.initialGalleryAndMap();
+  if (!token) {
+    navigateToLogin();
+    return;
   }
+
+  this.#presenter = new HomePresenter({
+    view: this,
+    model: CityCareAPI,
+  });
+
+  await this.#presenter.initialGalleryAndMap();
+}
 
   async initialMap() {
     try {
