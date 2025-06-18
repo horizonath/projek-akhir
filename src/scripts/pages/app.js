@@ -119,6 +119,7 @@ async renderPage() {
 
   if (!isLogin && !authPages.includes(url)) {
     location.hash = '/login';
+    await this.renderPage(); // Tambahkan ini agar langsung render ulang
     return;
   }
 
